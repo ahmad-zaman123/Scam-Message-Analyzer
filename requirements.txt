@@ -1,0 +1,9 @@
+# Python dependencies: none — runs on the Python 3 standard library alone.
+#
+# System dependency (optional, only needed to read screenshots/images):
+#   Tesseract OCR — installed via your OS package manager, not pip:
+#     Ubuntu/Debian:  sudo apt install tesseract-ocr
+#     macOS (brew):   brew install tesseract
+#     Windows:        https://github.com/UB-Mannheim/tesseract/wiki
+#
+# Text and .eml input work without it.
