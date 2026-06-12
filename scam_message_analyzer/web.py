@@ -5,16 +5,16 @@ person at risk just pastes a message and clicks one big button. No
 framework, no internet, no data ever leaves the machine — it reuses the
 same rule-based ``analyze()`` as the CLI.
 
-    python -m scam_explainer.web
+    python -m scam_message_analyzer.web
 """
 
 import html
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs
 
-from scam_explainer.analyzer import analyze
-from scam_explainer.explanations import GENERAL_ADVICE, GREEN_CAVEAT
-from scam_explainer.scoring import GREEN, VERDICT_LABEL
+from scam_message_analyzer.analyzer import analyze
+from scam_message_analyzer.explanations import GENERAL_ADVICE, GREEN_CAVEAT
+from scam_message_analyzer.scoring import GREEN, VERDICT_LABEL
 
 _BANNER_COLORS = {
     "red": "#c0392b",

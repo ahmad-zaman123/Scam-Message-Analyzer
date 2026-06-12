@@ -3,8 +3,8 @@
 import unittest
 from unittest import mock
 
-from scam_explainer import ocr
-from scam_explainer.analyzer import analyze
+from scam_message_analyzer import ocr
+from scam_message_analyzer.analyzer import analyze
 
 
 def codes(text):
@@ -68,14 +68,14 @@ class AttachmentTests(unittest.TestCase):
 
 class QrDecodeTests(unittest.TestCase):
     def test_no_zbar_returns_empty(self):
-        with mock.patch("scam_explainer.ocr.shutil.which", return_value=None):
+        with mock.patch("scam_message_analyzer.ocr.shutil.which", return_value=None):
             self.assertEqual(ocr.decode_qr_urls("shot.png"), [])
 
     def test_extracts_urls_from_output(self):
         fake = mock.Mock(returncode=0, stdout="http://bit.ly/x\nplain text\n", stderr="")
-        with mock.patch("scam_explainer.ocr.shutil.which", return_value="/usr/bin/zbarimg"), \
-                mock.patch("scam_explainer.ocr.os.path.isfile", return_value=True), \
-                mock.patch("scam_explainer.ocr.subprocess.run", return_value=fake):
+        with mock.patch("scam_message_analyzer.ocr.shutil.which", return_value="/usr/bin/zbarimg"), \
+                mock.patch("scam_message_analyzer.ocr.os.path.isfile", return_value=True), \
+                mock.patch("scam_message_analyzer.ocr.subprocess.run", return_value=fake):
             self.assertEqual(ocr.decode_qr_urls("shot.png"), ["http://bit.ly/x"])
 
 

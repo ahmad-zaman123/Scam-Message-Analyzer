@@ -9,7 +9,7 @@ import ipaddress
 import re
 from html.parser import HTMLParser
 
-from scam_explainer.findings import HIGH, LOW, MEDIUM, Finding
+from scam_message_analyzer.findings import HIGH, LOW, MEDIUM, Finding
 
 # Common two-part public suffixes, so "bbc.co.uk" -> "bbc.co.uk" not "co.uk".
 # A pragmatic subset of the Public Suffix List — enough for brand/shortener

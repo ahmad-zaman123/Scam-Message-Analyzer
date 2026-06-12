@@ -1,15 +1,15 @@
 """Command-line entry point.
 
 Usage:
-    python -m scam_explainer path/to/email.txt
-    python -m scam_explainer screenshot.png
-    cat email.txt | python -m scam_explainer
+    python -m scam_message_analyzer path/to/email.txt
+    python -m scam_message_analyzer screenshot.png
+    cat email.txt | python -m scam_message_analyzer
 """
 
 import sys
 
-from scam_explainer.analyzer import analyze, format_report
-from scam_explainer.ocr import (
+from scam_message_analyzer.analyzer import analyze, format_report
+from scam_message_analyzer.ocr import (
     OcrError,
     OcrUnavailable,
     decode_qr_urls,

@@ -2,8 +2,8 @@
 
 import unittest
 
-from scam_explainer.analyzer import analyze
-from scam_explainer.scoring import GREEN, RED, YELLOW
+from scam_message_analyzer.analyzer import analyze
+from scam_message_analyzer.scoring import GREEN, RED, YELLOW
 
 SCAM_EMAIL = """\
 From: PayPal Security <service@paypa1-secure.ru>

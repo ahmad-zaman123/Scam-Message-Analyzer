@@ -4,7 +4,7 @@ The logic is intentionally simple and explainable: any high-severity signal,
 or enough smaller ones stacked together, makes the message red.
 """
 
-from scam_explainer.findings import HIGH
+from scam_message_analyzer.findings import HIGH
 
 RED = "red"
 YELLOW = "yellow"

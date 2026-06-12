@@ -5,9 +5,9 @@ import re
 from dataclasses import dataclass
 from email.utils import parseaddr
 
-from scam_explainer import checks
-from scam_explainer.explanations import GENERAL_ADVICE, GREEN_CAVEAT, explain
-from scam_explainer.scoring import GREEN, VERDICT_LABEL, score
+from scam_message_analyzer import checks
+from scam_message_analyzer.explanations import GENERAL_ADVICE, GREEN_CAVEAT, explain
+from scam_message_analyzer.scoring import GREEN, VERDICT_LABEL, score
 
 
 @dataclass

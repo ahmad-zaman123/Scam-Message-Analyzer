@@ -2,8 +2,8 @@
 
 import unittest
 
-from scam_explainer.analyzer import analyze
-from scam_explainer.web import render_page, render_result
+from scam_message_analyzer.analyzer import analyze
+from scam_message_analyzer.web import render_page, render_result
 
 SCAM = (
     "From: PayPal <service@paypa1-secure.ru>\n"

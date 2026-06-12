@@ -1,4 +1,6 @@
-# scam-explainer
+# Scam Message Analyzer
+
+![tests](https://github.com/ahmad-zaman123/Scam-Message-Analyzer/actions/workflows/ci.yml/badge.svg)
 
 Paste a suspicious email and get a calm, plain-language explanation of **why**
 it looks like a scam — written for a non-technical person (e.g. an elderly
@@ -7,7 +9,7 @@ relative). The goal is to teach instinct, not just block.
 - **No AI, no API keys, no cost.** Every verdict comes from explainable rules.
 - **Fully offline.** Nothing about the message ever leaves your machine.
 - **Predictable.** The same email always gets the same answer — and you can
-  read exactly why in `scam_explainer/checks.py`.
+  read exactly why in `scam_message_analyzer/checks.py`.
 
 ## How it works
 
@@ -33,13 +35,13 @@ relative). The goal is to teach instinct, not just block.
 
 ```bash
 # Check a saved email
-python -m scam_explainer email.txt
+python -m scam_message_analyzer email.txt
 
 # Check a screenshot of a text or email (see OCR note below)
-python -m scam_explainer screenshot.png
+python -m scam_message_analyzer screenshot.png
 
 # Or pipe it in
-cat email.txt | python -m scam_explainer
+cat email.txt | python -m scam_message_analyzer
 ```
 
 Accepts a full raw email (with `From:` / `Subject:` headers), just pasted body
@@ -52,7 +54,7 @@ commands. Run a small **local** web page instead — a big paste box and one
 button. A caregiver can bookmark it; the relative just pastes and clicks.
 
 ```bash
-python -m scam_explainer.web
+python -m scam_message_analyzer.web
 # then open http://127.0.0.1:8765 in a browser
 ```
 

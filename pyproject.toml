@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scam-message-analyzer"
+version = "0.1.0"
+description = "Offline, rule-based tool that detects and explains why an email or text is likely a scam, in plain language."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Ahmad Zaman" }]
+keywords = ["scam", "phishing", "security", "ocr", "offline"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Security",
+    "Environment :: Console",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/ahmad-zaman123/Scam-Message-Analyzer"
+
+[project.scripts]
+scam-check = "scam_message_analyzer.cli:main"
+
+[tool.setuptools]
+packages = ["scam_message_analyzer"]
