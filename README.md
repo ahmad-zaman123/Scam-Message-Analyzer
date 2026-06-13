@@ -61,6 +61,17 @@ python -m scam_message_analyzer.web
 Still fully offline — it binds to localhost only and nothing is uploaded,
 logged, or stored.
 
+### Deploying as a hosted web app
+
+`app.py` at the repository root is a small, dependency-free WSGI entrypoint that
+wraps the same rules, so the tool can be hosted (e.g. on Vercel, which
+auto-detects a root `app.py`). It lives at the root, rather than inside the
+package, because that is where hosting platforms look for it.
+
+Note the trade-off: when hosted, pasted messages are sent to that server, so the
+"nothing leaves your machine" guarantee applies only to the local CLI and web
+page. The hosted page softens its privacy wording accordingly.
+
 ### Screenshots (OCR)
 
 Most people who want a message checked have a *screenshot*, not its raw text.
