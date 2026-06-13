@@ -114,6 +114,13 @@ _STYLE = """
     padding: 16px; margin-top: 16px;
   }
   .printbtn { margin-top: 12px; }
+  .checked-message { display: none; }
+  .checked-message h2 { font-size: 21px; margin: 6px 0 8px; }
+  .checked-message pre {
+    white-space: pre-wrap; word-wrap: break-word; font: inherit;
+    background: var(--field); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; margin: 0 0 16px;
+  }
   .privacy { color: var(--muted); font-size: 15px; text-align: center; margin-top: 26px; }
   @media (max-width: 480px) { .btn { width: 100%; } h1 { font-size: 26px; } }
   .theme-toggle {
@@ -123,7 +130,12 @@ _STYLE = """
   }
   .theme-toggle:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
   @media print {
+    :root, :root[data-theme="dark"] {
+      --bg: #fff; --card: #fff; --ink: #000; --muted: #333;
+      --border: #bbb; --field: #f6f6f6;
+    }
     header .subtitle, .card, .privacy, .printbtn, .theme-toggle { display: none; }
+    .checked-message { display: block; }
     body { background: #fff; padding: 0; }
   }
   :root[data-theme="dark"] {
@@ -267,9 +279,15 @@ def render_for(message, intro=LOCAL_INTRO, privacy=LOCAL_PRIVACY):
 
     report = analyze(message)
     title = "{} — {}".format(VERDICT_LABEL[report.verdict], DEFAULT_TITLE)
+    # Echo the checked message so a printed/saved copy records what was analyzed.
+    # Hidden on screen (it is still in the box above); shown only when printing.
+    echo = (
+        '<section class="checked-message"><h2>Message you checked:</h2>'
+        "<pre>{}</pre></section>".format(html.escape(message))
+    )
     return render_page(
         message=message,
-        result=render_result(report),
+        result=echo + render_result(report),
         intro=intro,
         privacy=privacy,
         title=title,
