@@ -124,38 +124,71 @@ function setupTheme() {
   });
 }
 
-async function handleImage(event) {
-  const file = event.target.files && event.target.files[0];
+async function processImage(file) {
   if (!file) return;
-  const status = document.getElementById("ocrStatus");
+  if (!file.type.startsWith("image/")) {
+    setStatus("That doesn't look like an image. Please choose a screenshot or photo.");
+    return;
+  }
   const checkBtn = document.getElementById("checkBtn");
-  status.hidden = false;
-  status.textContent = "Reading the image… (the first time may take a moment)";
+  const name = file.name || "image";
+  setStatus(`Reading “${name}”… (the first time may take a moment)`);
   checkBtn.disabled = true;
   try {
     const { imageToText } = await import("./ocr.js"); // lazy-load OCR + libs
     const text = await imageToText(file, (p) => {
-      status.textContent = `Reading the image… ${Math.round(p * 100)}%`;
+      setStatus(`Reading “${name}”… ${Math.round(p * 100)}%`);
     });
     if (text.trim()) {
       messageEl.value = text;
-      status.hidden = true;
+      setStatus("");
       check(text);
     } else {
-      status.textContent =
-        "Couldn't find any text in that image. Try a clearer screenshot, or paste the text.";
+      setStatus("Couldn't find any text in that image. Try a clearer screenshot, or paste the text.");
     }
   } catch (e) {
-    status.textContent =
-      "Sorry, reading images isn't available right now (it needs a one-time download). Please paste the text instead.";
+    setStatus("Sorry, reading images isn't available right now (it needs a one-time download). Please paste the text instead.");
   } finally {
     checkBtn.disabled = false;
-    event.target.value = ""; // allow re-selecting the same file
   }
+}
+
+function setStatus(text) {
+  const status = document.getElementById("ocrStatus");
+  status.textContent = text;
+  status.hidden = !text;
+}
+
+function setupUpload() {
+  const input = document.getElementById("image");
+  const dropzone = document.getElementById("dropzone");
+
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    processImage(file);
+    input.value = ""; // allow re-selecting the same file
+  });
+
+  ["dragenter", "dragover"].forEach((ev) =>
+    dropzone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    })
+  );
+  ["dragleave", "dragend", "drop"].forEach((ev) =>
+    dropzone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+    })
+  );
+  dropzone.addEventListener("drop", (e) => {
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) processImage(file);
+  });
 }
 
 document.getElementById("checkBtn").addEventListener("click", () => check());
 document.getElementById("exampleBtn").addEventListener("click", loadExample);
 document.getElementById("clearBtn").addEventListener("click", clearAll);
-document.getElementById("image").addEventListener("change", handleImage);
+setupUpload();
 setupTheme();

@@ -31,9 +31,16 @@
     <p class="lead">Paste the message below and press the button.</p>
     <textarea id="message" aria-label="Suspicious message to check"
               placeholder="Paste the suspicious email or text here..." autofocus></textarea>
+    <div class="or-sep">or</div>
     <div class="upload">
-      <label for="image">…or upload a screenshot of the message:</label>
-      <input type="file" id="image" accept="image/*">
+      <input type="file" id="image" accept="image/*" class="visually-hidden">
+      <label for="image" class="dropzone" id="dropzone">
+        <span class="dropzone-icon" aria-hidden="true">🖼️</span>
+        <span class="dropzone-text">
+          <strong>Upload a screenshot</strong>
+          <span class="dropzone-hint">Click to choose, or drag an image here — a photo of a text works too.</span>
+        </span>
+      </label>
       <p id="ocrStatus" class="ocr-status" hidden></p>
     </div>
     <div class="actions">
