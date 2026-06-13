@@ -52,7 +52,7 @@ _STYLE = """
   :root {
     --bg: #eef1f7; --card: #fff; --ink: #1b2330; --muted: #5d6b7e;
     --primary: #2563eb; --primary-dark: #1d4ed8; --border: #d4dbe6;
-    --accent: #2563eb;
+    --accent: #2563eb; --field: #fbfcfe;
   }
   * { box-sizing: border-box; }
   body {
@@ -72,8 +72,9 @@ _STYLE = """
   textarea {
     width: 100%; min-height: 200px; font: inherit; padding: 14px;
     border: 2px solid var(--border); border-radius: 12px; resize: vertical;
-    background: #fbfcfe;
+    background: var(--field); color: var(--ink); caret-color: var(--ink);
   }
+  textarea::placeholder { color: var(--muted); opacity: 1; }
   textarea:focus {
     outline: none; border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(37, 99, 235, .18);
@@ -86,8 +87,8 @@ _STYLE = """
   }
   .btn-primary { background: var(--primary); color: #fff; }
   .btn-primary:hover { background: var(--primary-dark); }
-  .btn-secondary { background: #fff; color: var(--ink); border-color: var(--border); }
-  .btn-secondary:hover { background: #eef1f7; }
+  .btn-secondary { background: var(--card); color: var(--ink); border-color: var(--border); }
+  .btn-secondary:hover { background: var(--bg); }
   .btn:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
   .result { margin-top: 4px; }
   .banner {
@@ -115,22 +116,60 @@ _STYLE = """
   .printbtn { margin-top: 12px; }
   .privacy { color: var(--muted); font-size: 15px; text-align: center; margin-top: 26px; }
   @media (max-width: 480px) { .btn { width: 100%; } h1 { font-size: 26px; } }
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; width: 44px; height: 44px;
+    border-radius: 50%; border: 1px solid var(--border); background: var(--card);
+    color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .theme-toggle:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
   @media print {
-    header .subtitle, .card, .privacy, .printbtn { display: none; }
+    header .subtitle, .card, .privacy, .printbtn, .theme-toggle { display: none; }
     body { background: #fff; padding: 0; }
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #11151c; --card: #1b2230; --ink: #e7ecf3; --muted: #9aa7b8;
-      --primary: #3b82f6; --primary-dark: #2563eb; --border: #2c3647;
-    }
-    textarea { background: #141b26; }
-    .advice { background: #1e2a44; border-color: #2c3b5a; }
-    .btn-secondary { background: #1b2230; }
-    .btn-secondary:hover { background: #232c3d; }
-    .notice { background: #2a2410; border-color: #5a4a1e; }
+  :root[data-theme="dark"] {
+    --bg: #11151c; --card: #1b2230; --ink: #e7ecf3; --muted: #9aa7b8;
+    --primary: #3b82f6; --primary-dark: #2563eb; --border: #2c3647;
+    --field: #141b26;
   }
+  :root[data-theme="dark"] .advice { background: #1e2a44; border-color: #2c3b5a; }
+  :root[data-theme="dark"] .notice { background: #2a2410; border-color: #5a4a1e; }
 """
+
+# Theme scripts kept as separate values (like _STYLE) so their JS braces are not
+# treated as format fields. The head script sets the saved/system theme before
+# first paint (no flash); the toggle script flips and persists the choice.
+_HEAD_SCRIPT = """<script>
+(function () {
+  try {
+    var t = localStorage.getItem('theme');
+    if (t !== 'dark' && t !== 'light') {
+      t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+})();
+</script>"""
+
+_TOGGLE_SCRIPT = """<script>
+(function () {
+  var b = document.getElementById('themeToggle');
+  if (!b) return;
+  function sync() {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    b.textContent = dark ? '☀️' : '\U0001F319';
+    b.setAttribute('aria-pressed', dark);
+  }
+  sync();
+  b.addEventListener('click', function () {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var next = dark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    sync();
+  });
+})();
+</script>"""
 
 _PAGE = """\
 <!doctype html>
@@ -140,10 +179,13 @@ _PAGE = """\
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>\U0001F6E1️</text></svg>">
+{head_script}
 <style>{style}</style>
 </head>
 <body>
 <div class="wrap">
+  <button id="themeToggle" class="theme-toggle" type="button"
+          aria-label="Switch between light and dark mode">\U0001F319</button>
   <header>
     <h1>\U0001F6E1️ Is this email or text a scam?</h1>
     <p class="subtitle">Paste a suspicious message and check it in one click.</p>
@@ -170,6 +212,7 @@ _PAGE = """\
   <section class="result" id="result" aria-live="polite">{result}</section>
   <p class="privacy">{privacy}</p>
 </div>
+{toggle_script}
 </body>
 </html>
 """
@@ -204,6 +247,8 @@ def render_page(
 ):
     return _PAGE.format(
         style=_STYLE,
+        head_script=_HEAD_SCRIPT,
+        toggle_script=_TOGGLE_SCRIPT,
         title=html.escape(title),
         message=html.escape(message),
         result=result,
