@@ -1,0 +1,10 @@
+{
+  "name": "scam-message-analyzer-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Client-side scam message analyzer — runs entirely in the browser.",
+  "scripts": {
+    "test": "node tests/run.js"
+  }
+}
