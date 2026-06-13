@@ -22,6 +22,17 @@ _BANNER_COLORS = {
     "green": "#1e8449",
 }
 
+# Privacy copy for the local server, where these claims are literally true.
+# A remote deployment should pass softened wording (see app.py).
+LOCAL_INTRO = (
+    "Paste the message below and press the button. Nothing you paste leaves "
+    "this computer."
+)
+LOCAL_PRIVACY = (
+    "This tool runs entirely on your computer. It uses simple safety rules, "
+    "not artificial intelligence, and stores nothing."
+)
+
 _PAGE = """\
 <!doctype html>
 <html lang="en">
@@ -46,16 +57,14 @@ _PAGE = """\
 </head>
 <body>
 <h1>Is this email or text a scam?</h1>
-<p>Paste the message below and press the button. Nothing you paste leaves
-this computer.</p>
+<p>{intro}</p>
 <form method="post" action="/">
   <textarea name="message" placeholder="Paste the suspicious email or text here..."
             autofocus>{message}</textarea>
   <br><button type="submit">Check this message</button>
 </form>
 {result}
-<p class="privacy">This tool runs entirely on your computer. It uses simple
-safety rules, not artificial intelligence, and stores nothing.</p>
+<p class="privacy">{privacy}</p>
 </body>
 </html>
 """
@@ -80,8 +89,13 @@ def render_result(report):
     return "\n".join(parts)
 
 
-def render_page(message="", result=""):
-    return _PAGE.format(message=html.escape(message), result=result)
+def render_page(message="", result="", intro=LOCAL_INTRO, privacy=LOCAL_PRIVACY):
+    return _PAGE.format(
+        message=html.escape(message),
+        result=result,
+        intro=html.escape(intro),
+        privacy=html.escape(privacy),
+    )
 
 
 class _Handler(BaseHTTPRequestHandler):
