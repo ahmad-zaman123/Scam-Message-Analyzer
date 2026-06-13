@@ -84,9 +84,11 @@ text and `.eml` input work without it.
 sudo apt install tesseract-ocr
 # macOS
 brew install tesseract
+# Windows: https://github.com/UB-Mannheim/tesseract/wiki
 ```
 
-If it isn't installed, the tool tells you how to get it.
+If it isn't installed, the tool tells you how to get it. There are no Python
+dependencies to install — the tool runs on the standard library alone.
 
 **QR codes ("quishing").** Many scams now hide the link inside a QR code that
 OCR can't read. If the optional `zbarimg` tool is installed
