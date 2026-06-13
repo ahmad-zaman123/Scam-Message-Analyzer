@@ -246,7 +246,7 @@ def render_result(report):
     parts.append('<p class="advice">{}</p>'.format(html.escape(advice)))
     parts.append(
         '<button type="button" class="btn btn-secondary printbtn" '
-        'onclick="window.print()">Print or save this result</button>'
+        'onclick="window.print()">Save as PDF</button>'
     )
     return "\n".join(parts)
 
