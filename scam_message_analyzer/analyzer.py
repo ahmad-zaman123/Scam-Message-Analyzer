@@ -19,7 +19,9 @@ class Report:
 
 
 def _domain_of(address):
-    _, addr = parseaddr(address or "")
+    # str(): on Python 3.8 a header with raw non-ASCII bytes comes back as a
+    # Header object, which parseaddr cannot handle.
+    _, addr = parseaddr(str(address or ""))
     return addr.split("@")[-1].lower() if "@" in addr else ""
 
 
@@ -40,7 +42,7 @@ def _parse(raw):
         # non-Latin characters (e.g. Cyrillic homographs in a phishing URL) into
         # literal "\uXXXX" text, hiding them from the detectors.
         message = email.message_from_bytes((raw or "").encode("utf-8", "surrogatepass"))
-        name, addr = parseaddr(message.get("From", ""))
+        name, addr = parseaddr(str(message.get("From", "")))
         headers["from_name"] = name
         headers["from_domain"] = addr.split("@")[-1].lower() if "@" in addr else ""
         headers["reply_to_domain"] = _domain_of(message.get("Reply-To", ""))
