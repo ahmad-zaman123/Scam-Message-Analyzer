@@ -23,7 +23,6 @@ _BANNER_COLORS = {
 }
 
 # Privacy copy for the local server, where these claims are literally true.
-# A remote deployment should pass softened wording (see app.py).
 LOCAL_INTRO = (
     "Paste the message below and press the button. Nothing you paste leaves "
     "this computer."

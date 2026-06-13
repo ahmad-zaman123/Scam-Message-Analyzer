@@ -13,9 +13,9 @@ relative). The goal is to teach instinct, not just block.
 - **Predictable.** The same email always gets the same answer — and you can
   read exactly why in `scam_message_analyzer/checks.py`.
 
-**▶ Try it live:** <https://scam-message-analyzer-mu.vercel.app/> — a hosted demo.
-Note that the hosted version sends your message to the server; for the full
-"nothing leaves your machine" guarantee, run it locally (see below).
+**▶ Try it live:** <https://scam-message-analyzer-mu.vercel.app/> — it runs
+entirely in your browser, so nothing you paste (or any screenshot you upload) is
+sent to a server.
 
 ![The web page: a paste box, one button, and a plain-language verdict](docs/screenshot.png)
 
@@ -77,45 +77,46 @@ When in doubt, do not click links or reply. Contact the company using a phone
 number or website you already know and trust — never the ones in this message.
 ```
 
-### Web page (easiest for non-technical users)
+### Web app (easiest for non-technical people)
 
 The CLI is fine for developers, but the person this tool protects won't type
-commands. Run a small **local** web page instead — a big paste box and one
-button. A caregiver can bookmark it; the relative just pastes and clicks.
+commands. The web app (in `web/`) is a big paste box and one button — a
+caregiver can bookmark it; the relative just pastes and clicks. It runs
+**entirely in the browser**: the analysis happens on the device, so nothing is
+uploaded.
+
+Use the [hosted version](https://scam-message-analyzer-mu.vercel.app/), or run
+it locally with any static server:
 
 ```bash
-python -m scam_message_analyzer.web
-# then open http://127.0.0.1:8765 in a browser
+cd web
+python -m http.server 8000
+# then open http://localhost:8000
 ```
 
-The page is designed for a worried, non-technical person:
+It is designed for a worried, non-technical person:
 
 - **One paste box, one big button**, with a clear 🔴 / 🟡 / 🟢 verdict and a
   plain-language reason for each warning sign.
-- **Try an example** — fills in a sample scam and shows the result, so a
-  first-time visitor sees what to do.
-- **Clear** resets the box and results; **Save as PDF** keeps a copy (with the
-  message, verdict, and reasons) to show someone you trust.
+- **Upload a screenshot** — the text is read in the browser (and any QR code is
+  decoded), so a photo of a text message works too.
+- **Try an example** fills in a sample scam; **Clear** resets; **Save as PDF**
+  keeps a copy (message, verdict, and reasons) to show someone you trust.
 - **"How does this work?"** explains, in plain words, that it uses fixed rules
   (not AI) and sends nothing.
-- Large text, keyboard focus rings, a **light/dark toggle** (defaults to light,
-  remembers your choice), and a responsive mobile layout — all with **no
-  external fonts, CSS, or JavaScript libraries**, so it works fully offline.
+- Large text, keyboard focus rings, a **light/dark toggle**, and a responsive
+  mobile layout. The text analysis uses **no external libraries**; reading a
+  screenshot loads a text-recognition component on demand.
 
-Still fully offline — it binds to localhost only and nothing is uploaded,
-logged, or stored.
+Prefer a Python server? `python -m scam_message_analyzer.web` runs the same
+text checks from the standard library at <http://127.0.0.1:8765>.
 
-### Deploying as a hosted web app
+### How it's deployed
 
-`app.py` at the repository root is a small, dependency-free WSGI entrypoint that
-wraps the same rules, so the tool can be hosted (e.g. on Vercel, which
-auto-detects a root `app.py`). It lives at the root, rather than inside the
-package, because that is where hosting platforms look for it. A live demo runs
-at <https://scam-message-analyzer-mu.vercel.app/>.
-
-Note the trade-off: when hosted, pasted messages are sent to that server, so the
-"nothing leaves your machine" guarantee applies only to the local CLI and web
-page. The hosted page softens its privacy wording accordingly.
+The hosted demo is the static site in `web/`, deployed on Vercel via
+`vercel.json` (which serves `web/` as static files). There is **no backend** —
+the analysis runs in the visitor's browser, so even the hosted version never
+uploads the message. Any static host (GitHub Pages, Netlify, …) works the same.
 
 ### Screenshots (OCR)
 
