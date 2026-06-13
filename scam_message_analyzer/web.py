@@ -142,10 +142,7 @@ _HEAD_SCRIPT = """<script>
 (function () {
   try {
     var t = localStorage.getItem('theme');
-    if (t !== 'dark' && t !== 'light') {
-      t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark' : 'light';
-    }
+    if (t !== 'dark' && t !== 'light') t = 'light';
     document.documentElement.setAttribute('data-theme', t);
   } catch (e) {}
 })();
