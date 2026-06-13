@@ -13,8 +13,7 @@ the right choice when privacy matters:
 
 from urllib.parse import parse_qs
 
-from scam_message_analyzer.analyzer import analyze
-from scam_message_analyzer.web import render_page, render_result
+from scam_message_analyzer.web import EXAMPLE_MESSAGE, render_for, render_page
 
 # Hosted copy: unlike the local server, pasted text is sent to this server, so
 # drop the "stays on your computer" claims and keep only what stays true here.
@@ -23,12 +22,6 @@ HOSTED_PRIVACY = (
     "This tool uses simple safety rules, not artificial intelligence, and "
     "stores nothing."
 )
-
-
-def _page(message="", result=""):
-    return render_page(
-        message=message, result=result, intro=HOSTED_INTRO, privacy=HOSTED_PRIVACY
-    )
 
 
 def app(environ, start_response):
@@ -41,10 +34,11 @@ def app(environ, start_response):
             length = 0
         raw = environ["wsgi.input"].read(length).decode("utf-8", "replace")
         message = parse_qs(raw).get("message", [""])[0]
-        report = analyze(message)
-        body = _page(message=message, result=render_result(report))
+        body = render_for(message, intro=HOSTED_INTRO, privacy=HOSTED_PRIVACY)
+    elif "example" in parse_qs(environ.get("QUERY_STRING", "")):
+        body = render_for(EXAMPLE_MESSAGE, intro=HOSTED_INTRO, privacy=HOSTED_PRIVACY)
     else:
-        body = _page()
+        body = render_page(intro=HOSTED_INTRO, privacy=HOSTED_PRIVACY)
 
     encoded = body.encode("utf-8")
     start_response(

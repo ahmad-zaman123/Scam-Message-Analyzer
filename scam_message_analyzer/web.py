@@ -10,7 +10,7 @@ same rule-based ``analyze()`` as the CLI.
 
 import html
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlsplit
 
 from scam_message_analyzer.analyzer import analyze
 from scam_message_analyzer.explanations import GENERAL_ADVICE, GREEN_CAVEAT
@@ -31,6 +31,18 @@ LOCAL_INTRO = (
 LOCAL_PRIVACY = (
     "This tool runs entirely on your computer. It uses simple safety rules, "
     "not artificial intelligence, and stores nothing."
+)
+
+DEFAULT_TITLE = "Is this a scam?"
+
+# A multi-signal sample shown by the "Try an example" button so first-time
+# visitors can see what a check looks like without pasting anything.
+EXAMPLE_MESSAGE = (
+    "Subject: Urgent: your account is suspended\n\n"
+    "Dear Customer,\n\n"
+    "We detected unusual activity on your account. Verify your identity "
+    "immediately at http://secure-login.verify-account.example or your "
+    "account will be permanently closed within 24 hours."
 )
 
 # Kept as a separate value (not part of the format template) so its CSS braces
@@ -93,6 +105,9 @@ _STYLE = """
     background: #eef2ff; border: 1px solid #dbe2ff; border-radius: 10px;
     padding: 16px; margin-top: 8px;
   }
+  details.how { margin-top: 16px; }
+  details.how summary { cursor: pointer; font-weight: 600; color: var(--primary); padding: 6px 0; }
+  details.how p { color: var(--muted); margin: 8px 0 0; }
   .privacy { color: var(--muted); font-size: 15px; text-align: center; margin-top: 26px; }
   @media (max-width: 480px) { .btn { width: 100%; } h1 { font-size: 26px; } }
 """
@@ -103,7 +118,8 @@ _PAGE = """\
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Is this a scam?</title>
+<title>{title}</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>\U0001F6E1️</text></svg>">
 <style>{style}</style>
 </head>
 <body>
@@ -114,17 +130,24 @@ _PAGE = """\
   </header>
   <main class="card">
     <p class="lead">{intro}</p>
-    <form method="post" action="/">
+    <form method="post" action="/#result">
       <textarea name="message" aria-label="Suspicious message to check"
                 placeholder="Paste the suspicious email or text here..."
                 autofocus>{message}</textarea>
       <div class="actions">
         <button class="btn btn-primary" type="submit">Check this message</button>
+        <a class="btn btn-secondary" href="/?example=1#result" role="button">Try an example</a>
         <a class="btn btn-secondary" href="/" role="button">Clear</a>
       </div>
     </form>
+    <details class="how">
+      <summary>How does this work?</summary>
+      <p>This tool checks your message against a fixed list of known scam
+      warning signs. It does not use artificial intelligence and never sends
+      your message anywhere — the same message always gets the same answer.</p>
+    </details>
   </main>
-  <section class="result" aria-live="polite">{result}</section>
+  <section class="result" id="result" aria-live="polite">{result}</section>
   <p class="privacy">{privacy}</p>
 </div>
 </body>
@@ -152,13 +175,31 @@ def render_result(report):
     return "\n".join(parts)
 
 
-def render_page(message="", result="", intro=LOCAL_INTRO, privacy=LOCAL_PRIVACY):
+def render_page(
+    message="", result="", intro=LOCAL_INTRO, privacy=LOCAL_PRIVACY, title=DEFAULT_TITLE
+):
     return _PAGE.format(
         style=_STYLE,
+        title=html.escape(title),
         message=html.escape(message),
         result=result,
         intro=html.escape(intro),
         privacy=html.escape(privacy),
+    )
+
+
+def render_for(message, intro=LOCAL_INTRO, privacy=LOCAL_PRIVACY):
+    """Analyze ``message`` and render the full page, with the verdict echoed in
+    the browser tab title. Shared by the POST handler and the example link."""
+
+    report = analyze(message)
+    title = "{} — {}".format(VERDICT_LABEL[report.verdict], DEFAULT_TITLE)
+    return render_page(
+        message=message,
+        result=render_result(report),
+        intro=intro,
+        privacy=privacy,
+        title=title,
     )
 
 
@@ -172,14 +213,17 @@ class _Handler(BaseHTTPRequestHandler):
         self.wfile.write(encoded)
 
     def do_GET(self):
-        self._send(render_page())
+        query = parse_qs(urlsplit(self.path).query)
+        if "example" in query:
+            self._send(render_for(EXAMPLE_MESSAGE))
+        else:
+            self._send(render_page())
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
         raw = self.rfile.read(length).decode("utf-8", "replace")
         message = parse_qs(raw).get("message", [""])[0]
-        report = analyze(message)
-        self._send(render_page(message=message, result=render_result(report)))
+        self._send(render_for(message))
 
     def log_message(self, *args):
         # Stay quiet — no request logging of (possibly personal) content.
