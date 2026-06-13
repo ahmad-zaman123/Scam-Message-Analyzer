@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is this a scam?</title>
+<meta name="description" content="Check whether an email or text is a scam. Runs entirely in your browser — nothing is uploaded.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🛡️</text></svg>">
+<link rel="stylesheet" href="styles.css">
+<script>
+  // Default to light; honour a saved choice. Runs before paint to avoid a flash.
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      if (t !== 'dark' && t !== 'light') t = 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+<div class="wrap">
+  <button id="themeToggle" class="theme-toggle" type="button"
+          aria-label="Switch between light and dark mode">🌙</button>
+  <header>
+    <h1>🛡️ Is this email or text a scam?</h1>
+    <p class="subtitle">Paste a suspicious message and check it in one click.
+    Everything runs in your browser — nothing is uploaded.</p>
+  </header>
+  <main class="card">
+    <p class="lead">Paste the message below and press the button.</p>
+    <textarea id="message" aria-label="Suspicious message to check"
+              placeholder="Paste the suspicious email or text here..." autofocus></textarea>
+    <div class="actions">
+      <button id="checkBtn" class="btn btn-primary" type="button">Check this message</button>
+      <button id="exampleBtn" class="btn btn-secondary" type="button">Try an example</button>
+      <button id="clearBtn" class="btn btn-secondary" type="button">Clear</button>
+    </div>
+    <details class="how">
+      <summary>How does this work?</summary>
+      <p>This page checks your message against a fixed list of known scam warning
+      signs, right here in your browser. It does not use artificial intelligence,
+      has no server, and never sends your message anywhere — the same message
+      always gets the same answer.</p>
+    </details>
+  </main>
+  <section class="result" id="result" aria-live="polite"></section>
+  <p class="privacy">This tool runs entirely in your browser. It uses simple
+  safety rules, not artificial intelligence, and stores nothing.</p>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

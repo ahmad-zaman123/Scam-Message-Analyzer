@@ -1,0 +1,101 @@
+:root {
+  --bg: #eef1f7; --card: #fff; --ink: #1b2330; --muted: #5d6b7e;
+  --primary: #2563eb; --primary-dark: #1d4ed8; --border: #d4dbe6;
+  --accent: #2563eb; --field: #fbfcfe;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--bg); color: var(--ink); margin: 0; padding: 28px 16px;
+  font-size: 18px; line-height: 1.55;
+}
+.wrap { max-width: 720px; margin: 0 auto; }
+header { text-align: center; margin-bottom: 22px; }
+h1 { font-size: 30px; margin: 0 0 6px; }
+.subtitle { color: var(--muted); margin: 0; }
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 22px; box-shadow: 0 8px 28px rgba(20, 32, 64, .07);
+}
+.lead { margin: 0 0 14px; }
+textarea {
+  width: 100%; min-height: 200px; font: inherit; padding: 14px;
+  border: 2px solid var(--border); border-radius: 12px; resize: vertical;
+  background: var(--field); color: var(--ink); caret-color: var(--ink);
+}
+textarea::placeholder { color: var(--muted); opacity: 1; }
+textarea:focus {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .18);
+}
+.upload { margin-top: 14px; }
+.upload label { display: block; color: var(--muted); margin-bottom: 6px; }
+.upload input[type=file] { font: inherit; max-width: 100%; }
+.ocr-status { color: var(--muted); margin: 8px 0 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.btn {
+  font-size: 20px; font-weight: 600; padding: 14px 26px; border-radius: 12px;
+  border: 2px solid transparent; cursor: pointer; text-decoration: none;
+  display: inline-block; text-align: center;
+}
+.btn:disabled { opacity: .6; cursor: default; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary { background: var(--card); color: var(--ink); border-color: var(--border); }
+.btn-secondary:hover { background: var(--bg); }
+.btn:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.result { margin-top: 4px; }
+.banner {
+  color: #fff; padding: 18px 20px; border-radius: 14px; font-size: 26px;
+  font-weight: 700; text-align: center; margin: 24px 0 14px;
+}
+.result h2 { font-size: 21px; margin: 6px 0 12px; }
+.findings { list-style: none; padding: 0; margin: 0; }
+.findings li {
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 6px solid var(--accent); border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 12px;
+}
+.advice {
+  background: #eef2ff; border: 1px solid #dbe2ff; border-radius: 10px;
+  padding: 16px; margin-top: 8px;
+}
+details.how { margin-top: 16px; }
+details.how summary { cursor: pointer; font-weight: 600; color: var(--primary); padding: 6px 0; }
+details.how p { color: var(--muted); margin: 8px 0 0; }
+.notice {
+  background: #fff8e1; border: 1px solid #f0d98c; border-radius: 10px;
+  padding: 16px; margin-top: 16px;
+}
+.printbtn { margin-top: 12px; }
+.checked-message { display: none; }
+.checked-message h2 { font-size: 21px; margin: 6px 0 8px; }
+.checked-message pre {
+  white-space: pre-wrap; word-wrap: break-word; font: inherit;
+  background: var(--field); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; margin: 0 0 16px;
+}
+.privacy { color: var(--muted); font-size: 15px; text-align: center; margin-top: 26px; }
+.theme-toggle {
+  position: fixed; top: 14px; right: 14px; width: 44px; height: 44px;
+  border-radius: 50%; border: 1px solid var(--border); background: var(--card);
+  color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer;
+}
+.theme-toggle:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+@media (max-width: 480px) { .btn { width: 100%; } h1 { font-size: 26px; } }
+@media print {
+  :root, :root[data-theme="dark"] {
+    --bg: #fff; --card: #fff; --ink: #000; --muted: #333;
+    --border: #bbb; --field: #f6f6f6;
+  }
+  header .subtitle, .card, .privacy, .printbtn, .theme-toggle { display: none; }
+  .checked-message { display: block; }
+  body { background: #fff; padding: 0; }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --card: #1b2230; --ink: #e7ecf3; --muted: #9aa7b8;
+  --primary: #3b82f6; --primary-dark: #2563eb; --border: #2c3647;
+  --field: #141b26;
+}
+:root[data-theme="dark"] .advice { background: #1e2a44; border-color: #2c3b5a; }
+:root[data-theme="dark"] .notice { background: #2a2410; border-color: #5a4a1e; }
