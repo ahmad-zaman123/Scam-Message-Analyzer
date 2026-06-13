@@ -11,6 +11,10 @@ relative). The goal is to teach instinct, not just block.
 - **Predictable.** The same email always gets the same answer — and you can
   read exactly why in `scam_message_analyzer/checks.py`.
 
+**▶ Try it live:** <https://scam-message-analyzer-mu.vercel.app/> — a hosted demo.
+Note that the hosted version sends your message to the server; for the full
+"nothing leaves your machine" guarantee, run it locally (see below).
+
 ## How it works
 
 1. **Deterministic checks** (`checks.py`) scan the message for known scam
@@ -80,7 +84,8 @@ logged, or stored.
 `app.py` at the repository root is a small, dependency-free WSGI entrypoint that
 wraps the same rules, so the tool can be hosted (e.g. on Vercel, which
 auto-detects a root `app.py`). It lives at the root, rather than inside the
-package, because that is where hosting platforms look for it.
+package, because that is where hosting platforms look for it. A live demo runs
+at <https://scam-message-analyzer-mu.vercel.app/>.
 
 Note the trade-off: when hosted, pasted messages are sent to that server, so the
 "nothing leaves your machine" guarantee applies only to the local CLI and web
