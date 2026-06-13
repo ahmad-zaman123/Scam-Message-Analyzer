@@ -33,6 +33,70 @@ LOCAL_PRIVACY = (
     "not artificial intelligence, and stores nothing."
 )
 
+# Kept as a separate value (not part of the format template) so its CSS braces
+# need no escaping. All styling is inline — no external fonts, CSS, or JS — so
+# the page works fully offline and nothing is fetched from the network.
+_STYLE = """
+  :root {
+    --bg: #eef1f7; --card: #fff; --ink: #1b2330; --muted: #5d6b7e;
+    --primary: #2563eb; --primary-dark: #1d4ed8; --border: #d4dbe6;
+    --accent: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg); color: var(--ink); margin: 0; padding: 28px 16px;
+    font-size: 18px; line-height: 1.55;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 { font-size: 30px; margin: 0 0 6px; }
+  .subtitle { color: var(--muted); margin: 0; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px; box-shadow: 0 8px 28px rgba(20, 32, 64, .07);
+  }
+  .lead { margin: 0 0 14px; }
+  textarea {
+    width: 100%; min-height: 200px; font: inherit; padding: 14px;
+    border: 2px solid var(--border); border-radius: 12px; resize: vertical;
+    background: #fbfcfe;
+  }
+  textarea:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .18);
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+  .btn {
+    font-size: 20px; font-weight: 600; padding: 14px 26px; border-radius: 12px;
+    border: 2px solid transparent; cursor: pointer; text-decoration: none;
+    display: inline-block; text-align: center;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: #fff; color: var(--ink); border-color: var(--border); }
+  .btn-secondary:hover { background: #eef1f7; }
+  .btn:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+  .result { margin-top: 4px; }
+  .banner {
+    color: #fff; padding: 18px 20px; border-radius: 14px; font-size: 26px;
+    font-weight: 700; text-align: center; margin: 24px 0 14px;
+  }
+  .result h2 { font-size: 21px; margin: 6px 0 12px; }
+  .findings { list-style: none; padding: 0; margin: 0; }
+  .findings li {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 6px solid var(--accent); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 12px;
+  }
+  .advice {
+    background: #eef2ff; border: 1px solid #dbe2ff; border-radius: 10px;
+    padding: 16px; margin-top: 8px;
+  }
+  .privacy { color: var(--muted); font-size: 15px; text-align: center; margin-top: 26px; }
+  @media (max-width: 480px) { .btn { width: 100%; } h1 { font-size: 26px; } }
+"""
+
 _PAGE = """\
 <!doctype html>
 <html lang="en">
@@ -40,31 +104,29 @@ _PAGE = """\
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Is this a scam?</title>
-<style>
-  body {{ font-family: system-ui, Arial, sans-serif; max-width: 720px;
-         margin: 0 auto; padding: 24px; font-size: 20px; color: #1a1a1a; }}
-  h1 {{ font-size: 30px; }}
-  textarea {{ width: 100%; min-height: 220px; font-size: 20px; padding: 12px;
-              box-sizing: border-box; border: 2px solid #999; border-radius: 8px; }}
-  button {{ font-size: 24px; padding: 16px 32px; margin-top: 16px; border: 0;
-            border-radius: 10px; background: #2563eb; color: #fff; cursor: pointer; }}
-  .banner {{ color: #fff; padding: 20px; border-radius: 10px; font-size: 28px;
-             font-weight: bold; margin: 24px 0; text-align: center; }}
-  ul {{ line-height: 1.5; }}
-  .advice {{ background: #f1f1f1; padding: 16px; border-radius: 8px; }}
-  .privacy {{ color: #666; font-size: 16px; margin-top: 32px; }}
-</style>
+<style>{style}</style>
 </head>
 <body>
-<h1>Is this email or text a scam?</h1>
-<p>{intro}</p>
-<form method="post" action="/">
-  <textarea name="message" placeholder="Paste the suspicious email or text here..."
-            autofocus>{message}</textarea>
-  <br><button type="submit">Check this message</button>
-</form>
-{result}
-<p class="privacy">{privacy}</p>
+<div class="wrap">
+  <header>
+    <h1>\U0001F6E1️ Is this email or text a scam?</h1>
+    <p class="subtitle">Paste a suspicious message and check it in one click.</p>
+  </header>
+  <main class="card">
+    <p class="lead">{intro}</p>
+    <form method="post" action="/">
+      <textarea name="message" aria-label="Suspicious message to check"
+                placeholder="Paste the suspicious email or text here..."
+                autofocus>{message}</textarea>
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Check this message</button>
+        <a class="btn btn-secondary" href="/" role="button">Clear</a>
+      </div>
+    </form>
+  </main>
+  <section class="result" aria-live="polite">{result}</section>
+  <p class="privacy">{privacy}</p>
+</div>
 </body>
 </html>
 """
@@ -80,7 +142,8 @@ def render_result(report):
         )
     ]
     if report.messages:
-        parts.append("<h2>Here's what looks suspicious:</h2><ul>")
+        parts.append("<h2>Here's what looks suspicious:</h2>")
+        parts.append('<ul class="findings" style="--accent:{}">'.format(color))
         for message in report.messages:
             parts.append("<li>{}</li>".format(html.escape(message)))
         parts.append("</ul>")
@@ -91,6 +154,7 @@ def render_result(report):
 
 def render_page(message="", result="", intro=LOCAL_INTRO, privacy=LOCAL_PRIVACY):
     return _PAGE.format(
+        style=_STYLE,
         message=html.escape(message),
         result=result,
         intro=html.escape(intro),
