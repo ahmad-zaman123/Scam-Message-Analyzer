@@ -97,17 +97,76 @@ URGENCY_PATTERNS = (
     r"final (notice|warning|reminder)",
     r"your (account|payment) (will|may) be (closed|cancell?ed|terminated)",
     r"failure to .* will result",
+    r"offer expires",
+    r"expires (today|tonight|soon|in \d+)",
+    r"limited[- ]time (offer|only)",
+    r"last chance",
+    r"act before",
+    r"(today|tonight) only",
+    r"ends (today|tonight|soon)",
+)
+
+# Official-sounding words attackers register into domains ("secure-login.com").
+# Matched as whole domain labels, never substrings, so "accountingfirm.com" is
+# left alone.
+DOMAIN_LURE_WORDS = frozenset(
+    {
+        "secure",
+        "security",
+        "account",
+        "accounts",
+        "login",
+        "logon",
+        "signin",
+        "signon",
+        "verify",
+        "verification",
+        "validate",
+        "confirm",
+        "update",
+        "auth",
+        "authentication",
+        "recovery",
+        "unlock",
+        "webscr",
+        "banking",
+        "wallet",
+    }
+)
+
+# "Log in / verify / confirm your account" phrasing. Scoped to identity/account,
+# not "verify your email", so routine sign-up confirmations don't trip it.
+CREDENTIAL_LURE_PATTERNS = (
+    r"verify your (account|identity)",
+    r"confirm your (account|identity|password|login|sign[- ]?in details)",
+    r"validate your (account|identity)",
+    r"update your (account|payment|billing|card) (details|information|info)",
+    r"(log ?in|sign ?in) to (verify|confirm|restore|reactivate|unlock|secure) your",
+    r"(reactivate|restore|unlock) your (account|access)",
 )
 
 SENSITIVE_PATTERNS = {
     r"\b(pin|password|passcode)\b": "your secret PIN or password",
     r"\bgift ?cards?\b": "gift cards",
-    r"\b(wire transfer|wire the|western union|moneygram)\b": "a wire transfer",
+    r"\bwire(d|s)? (transfer|the|money|funds|payment|\$|\d)": "a wire transfer",
+    r"\b(western union|moneygram)\b": "a wire transfer",
     r"\b(bitcoin|btc|crypto(currency)?|usdt)\b": "cryptocurrency",
     r"\b(social security|ssn)\b": "your Social Security number",
     r"\b(routing|account) number\b": "your bank account number",
     r"\b(cvv|card verification)\b": "your card security code",
 }
+
+# Demands for secrecy that isolate the victim — a hallmark of wire-transfer and
+# gift-card fraud. Imperative phrasing only, so "this email is confidential"
+# footers are not flagged.
+SECRECY_PATTERNS = (
+    r"do(?: not|n'?t) (tell|discuss|share|mention|inform|talk to|reach out to) "
+    r".{0,30}(anyone|anybody|others|else|colleagues|staff|family|hr|management)",
+    r"keep (?:this|it) (?:between us|confidential|secret|quiet|to yourself|private)",
+    r"without (?:telling|informing|alerting) (?:anyone|anybody|others|management|hr)",
+    r"(?:must|should) (?:stay|remain|be kept) (?:strictly )?"
+    r"(?:confidential|secret|between us)",
+)
 
 GENERIC_GREETINGS = (
     "dear customer",
@@ -150,7 +209,9 @@ LOTTERY_PATTERNS = (
     r"you('ve| have)? (just )?won",
     r"(lottery|jackpot|sweepstakes|raffle)",
     r"(lucky|grand) (winner|prize)",
-    r"claim your (prize|reward|winnings|money)",
+    r"claim your (prize|reward|winnings|money|refund|cash|payment|funds)",
+    r"(eligible|entitled|qualify|due) (for|to|a) .{0,30}refund",
+    r"(unclaimed|pending|outstanding) refund",
     r"unclaimed (funds|money|inheritance)",
     r"(inheritance|next of kin|beneficiary)",
     r"(million|billion) (dollars|usd|pounds|euros)",
@@ -163,8 +224,20 @@ MONEY_RE = re.compile(r"[$£€]\s?\d{1,3}(?:,\d{3})+(?:\.\d+)?")
 EXECUTABLE_EXTENSIONS = frozenset(
     {".exe", ".scr", ".js", ".vbs", ".bat", ".cmd", ".jar", ".lnk", ".iso", ".img", ".msi"}
 )
-RISKY_EXTENSIONS = frozenset(
-    {".zip", ".rar", ".7z", ".html", ".htm", ".docm", ".xlsm", ".pptm"}
+# Archives can hide an executable but are also used legitimately, so they only
+# escalate to high alongside a delivery lure (see ATTACHMENT_LURE_RE).
+ARCHIVE_EXTENSIONS = frozenset({".zip", ".rar", ".7z"})
+# Web-page and macro-enabled office attachments rarely have a legitimate reason
+# to reach an individual.
+DANGEROUS_DOC_EXTENSIONS = frozenset({".html", ".htm", ".docm", ".xlsm", ".pptm"})
+RISKY_EXTENSIONS = ARCHIVE_EXTENSIONS | DANGEROUS_DOC_EXTENSIONS
+
+# Finance/HR/delivery themes used to bait people into opening an attachment.
+ATTACHMENT_LURE_RE = re.compile(
+    r"\b(payroll|invoice|receipt|remittance|purchase order|payment|statement|"
+    r"salary|payslip|bonus|refund|shipment|shipping|delivery|parcel|tracking|"
+    r"voicemail|voice ?mail|fax|scanned? document)\b",
+    re.IGNORECASE,
 )
 _FILENAME_RE = re.compile(r"[\w.-]+\.[A-Za-z0-9]{2,4}(?:\.[A-Za-z0-9]{2,4})?")
 
@@ -438,6 +511,23 @@ def check_sensitive_requests(body_text, **_):
     return findings
 
 
+def check_secrecy(body_text, **_):
+    """'Don't tell anyone' style pressure that isolates the victim."""
+
+    text = (body_text or "").lower()
+    for pattern in SECRECY_PATTERNS:
+        match = re.search(pattern, text)
+        if match:
+            return [
+                Finding(
+                    code="secrecy_pressure",
+                    severity=MEDIUM,
+                    evidence={"phrase": match.group(0)},
+                )
+            ]
+    return []
+
+
 def check_generic_greeting(body_text, **_):
     text = (body_text or "").lower()
     for greeting in GENERIC_GREETINGS:
@@ -545,6 +635,7 @@ def check_attachments(body_text, attachments=None, **_):
     findings = []
     names = list(attachments or [])
     names.extend(_FILENAME_RE.findall(body_text or ""))
+    has_lure = bool(ATTACHMENT_LURE_RE.search(body_text or ""))
 
     seen = set()
     for name in names:
@@ -563,34 +654,112 @@ def check_attachments(body_text, attachments=None, **_):
             for ext in extensions[:-1]
         )
 
-        if final_ext in EXECUTABLE_EXTENSIONS or is_double:
-            findings.append(
-                Finding(
-                    code="risky_attachment",
-                    severity=HIGH,
-                    evidence={"name": name, "ext": final_ext},
-                )
+        high_risk = (
+            final_ext in EXECUTABLE_EXTENSIONS
+            or final_ext in DANGEROUS_DOC_EXTENSIONS
+        )
+        if high_risk or is_double:
+            severity = HIGH
+        elif final_ext in ARCHIVE_EXTENSIONS:
+            # An archive plus a delivery lure is the classic malware email;
+            # on its own it is only suspicious.
+            severity = HIGH if has_lure else MEDIUM
+        else:
+            continue
+
+        findings.append(
+            Finding(
+                code="risky_attachment",
+                severity=severity,
+                evidence={"name": name, "ext": final_ext},
             )
-        elif final_ext in RISKY_EXTENSIONS:
-            findings.append(
-                Finding(
-                    code="risky_attachment",
-                    severity=MEDIUM,
-                    evidence={"name": name, "ext": final_ext},
-                )
-            )
+        )
     return findings
+
+
+def _lure_labels(domain):
+    """Lure words appearing as whole labels in a registrable domain, ignoring
+    the public-suffix tail."""
+
+    labels = domain.split(".")
+    head = labels[:-1] if len(labels) > 1 else labels
+    parts = set()
+    for label in head:
+        parts.update(label.split("-"))
+    return parts & DOMAIN_LURE_WORDS
+
+
+def check_deceptive_domain(links, **_):
+    """A link whose own registered domain is built from official-sounding words
+    (e.g. "verify-account.example") rather than a real brand or company name."""
+
+    findings = []
+    seen = set()
+    for link in links:
+        registered = registered_domain(link["href"])
+        if not registered or registered in seen:
+            continue
+        # Real brands, shorteners, and raw IPs are handled by other detectors.
+        if registered in set(BRANDS.values()) or registered in SHORTENERS:
+            continue
+        try:
+            ipaddress.ip_address(_host(link["href"]))
+            continue
+        except ValueError:
+            pass
+
+        hits = _lure_labels(registered)
+        sld = registered.split(".")[0]
+        if len(hits) >= 2:
+            severity = HIGH
+        elif len(hits) == 1 and "-" in sld:
+            severity = MEDIUM
+        else:
+            continue
+
+        seen.add(registered)
+        findings.append(
+            Finding(
+                code="deceptive_domain",
+                severity=severity,
+                evidence={"host": registered, "words": ", ".join(sorted(hits))},
+            )
+        )
+    return findings
+
+
+def check_credential_lure(links, body_text, **_):
+    """Asks you to log in / verify / confirm your account through a link — the
+    core of credential phishing. Only fires when the message contains a link."""
+
+    if not links:
+        return []
+    text = (body_text or "").lower()
+    for pattern in CREDENTIAL_LURE_PATTERNS:
+        match = re.search(pattern, text)
+        if match:
+            return [
+                Finding(
+                    code="credential_lure",
+                    severity=MEDIUM,
+                    evidence={"phrase": match.group(0)},
+                )
+            ]
+    return []
 
 
 ALL_CHECKS = (
     check_link_text_mismatch,
     check_lookalike_domains,
+    check_deceptive_domain,
+    check_credential_lure,
     check_homograph_domains,
     check_raw_ip_urls,
     check_url_shorteners,
     check_sender_mismatch,
     check_urgency,
     check_sensitive_requests,
+    check_secrecy,
     check_generic_greeting,
     check_tech_support,
     check_call_a_number,

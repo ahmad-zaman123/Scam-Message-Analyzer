@@ -36,7 +36,10 @@ def _parse(raw):
 
     looks_like_email = bool(re.match(r"(?im)^(from|subject|to|date):", raw or ""))
     if looks_like_email:
-        message = email.message_from_string(raw)
+        # Parse from bytes: message_from_string + get_payload(decode=True) mangles
+        # non-Latin characters (e.g. Cyrillic homographs in a phishing URL) into
+        # literal "\uXXXX" text, hiding them from the detectors.
+        message = email.message_from_bytes((raw or "").encode("utf-8", "surrogatepass"))
         name, addr = parseaddr(message.get("From", ""))
         headers["from_name"] = name
         headers["from_domain"] = addr.split("@")[-1].lower() if "@" in addr else ""

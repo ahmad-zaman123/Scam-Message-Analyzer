@@ -17,6 +17,18 @@ TEMPLATES = {
         "\"{canonical}\" ({brand}) but is not the same. This is a common trick. "
         "\U0001F449 Don't click it, and don't enter any details there."
     ),
+    "deceptive_domain": (
+        "A link's web address (\"{host}\") is built from official-sounding "
+        "words like \"{words}\" to look trustworthy, but it is not a real "
+        "company's website. \U0001F449 Don't click it, and don't enter any "
+        "details there."
+    ),
+    "credential_lure": (
+        "This message asks you to log in or confirm your account details "
+        "(\"{phrase}\") through a link. Real companies don't ask you to verify "
+        "your identity this way. \U0001F449 Don't use the link — open the app "
+        "or website you already trust instead."
+    ),
     "punycode_domain": (
         "A link uses a disguised web address (\"{host}\") that can hide its "
         "real name using special characters. \U0001F449 Treat it as unsafe."
@@ -49,6 +61,11 @@ TEMPLATES = {
     "sensitive_request": (
         "This message is trying to get {thing}. A real company will not ask "
         "for this by email or text. \U0001F449 Never send it."
+    ),
+    "secrecy_pressure": (
+        "This message tells you to keep the request secret (\"{phrase}\"). "
+        "Scammers demand secrecy so no one can warn you in time. \U0001F449 "
+        "Talk to someone you trust before doing anything."
     ),
     "generic_greeting": (
         "The greeting is generic (\"{greeting}\") instead of your real name. "
