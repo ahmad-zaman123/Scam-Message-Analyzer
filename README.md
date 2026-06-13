@@ -1,6 +1,8 @@
 # Scam Message Analyzer
 
 ![tests](https://github.com/ahmad-zaman123/Scam-Message-Analyzer/actions/workflows/ci.yml/badge.svg)
+![python](https://img.shields.io/badge/python-3.8%2B-blue.svg)
+![license](https://img.shields.io/badge/license-MIT-green.svg)
 
 Paste a suspicious email and get a calm, plain-language explanation of **why**
 it looks like a scam — written for a non-technical person (e.g. an elderly
@@ -14,6 +16,8 @@ relative). The goal is to teach instinct, not just block.
 **▶ Try it live:** <https://scam-message-analyzer-mu.vercel.app/> — a hosted demo.
 Note that the hosted version sends your message to the server; for the full
 "nothing leaves your machine" guarantee, run it locally (see below).
+
+![The web page: a paste box, one button, and a plain-language verdict](docs/screenshot.png)
 
 ## How it works
 
@@ -50,6 +54,28 @@ cat email.txt | python -m scam_message_analyzer
 
 Accepts a full raw email (with `From:` / `Subject:` headers), just pasted body
 text, or an image. No `pip install` needed — it runs on the standard library.
+
+### Example
+
+```text
+$ python -m scam_message_analyzer suspicious.eml
+
+🔴 LIKELY A SCAM
+
+Here's what looks suspicious:
+  • A link's web address ("verify-account.example") is built from official-sounding
+    words like "account, verify" to look trustworthy, but it is not a real company's
+    website. 👉 Don't click it, and don't enter any details there.
+  • This message asks you to log in or confirm your account details ("verify your
+    identity") through a link. Real companies don't ask you to verify your identity
+    this way. 👉 Don't use the link — open the app or website you already trust instead.
+  • This message tries to rush you ("immediately"). Scammers create panic so you act
+    before you think. 👉 Slow down — real problems can wait for you to check.
+  • The greeting is generic ("dear customer") instead of your real name.
+
+When in doubt, do not click links or reply. Contact the company using a phone
+number or website you already know and trust — never the ones in this message.
+```
 
 ### Web page (easiest for non-technical users)
 
