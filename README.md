@@ -17,7 +17,7 @@ relative). The goal is to teach instinct, not just block.
 entirely in your browser, so nothing you paste (or any screenshot you upload) is
 sent to a server.
 
-![The web page: a paste box, one button, and a plain-language verdict](docs/screenshot.png)
+![The browser app: paste a message or upload a screenshot, then get a plain-language verdict](docs/screenshot.png)
 
 ## How it works
 
