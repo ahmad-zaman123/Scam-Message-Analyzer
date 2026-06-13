@@ -108,8 +108,28 @@ _STYLE = """
   details.how { margin-top: 16px; }
   details.how summary { cursor: pointer; font-weight: 600; color: var(--primary); padding: 6px 0; }
   details.how p { color: var(--muted); margin: 8px 0 0; }
+  .notice {
+    background: #fff8e1; border: 1px solid #f0d98c; border-radius: 10px;
+    padding: 16px; margin-top: 16px;
+  }
+  .printbtn { margin-top: 12px; }
   .privacy { color: var(--muted); font-size: 15px; text-align: center; margin-top: 26px; }
   @media (max-width: 480px) { .btn { width: 100%; } h1 { font-size: 26px; } }
+  @media print {
+    header .subtitle, .card, .privacy, .printbtn { display: none; }
+    body { background: #fff; padding: 0; }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11151c; --card: #1b2230; --ink: #e7ecf3; --muted: #9aa7b8;
+      --primary: #3b82f6; --primary-dark: #2563eb; --border: #2c3647;
+    }
+    textarea { background: #141b26; }
+    .advice { background: #1e2a44; border-color: #2c3b5a; }
+    .btn-secondary { background: #1b2230; }
+    .btn-secondary:hover { background: #232c3d; }
+    .notice { background: #2a2410; border-color: #5a4a1e; }
+  }
 """
 
 _PAGE = """\
@@ -133,7 +153,7 @@ _PAGE = """\
     <form method="post" action="/#result">
       <textarea name="message" aria-label="Suspicious message to check"
                 placeholder="Paste the suspicious email or text here..."
-                autofocus>{message}</textarea>
+                required autofocus>{message}</textarea>
       <div class="actions">
         <button class="btn btn-primary" type="submit">Check this message</button>
         <a class="btn btn-secondary" href="/?example=1#result" role="button">Try an example</a>
@@ -172,6 +192,10 @@ def render_result(report):
         parts.append("</ul>")
     advice = GREEN_CAVEAT if report.verdict == GREEN else GENERAL_ADVICE
     parts.append('<p class="advice">{}</p>'.format(html.escape(advice)))
+    parts.append(
+        '<button type="button" class="btn btn-secondary printbtn" '
+        'onclick="window.print()">Print or save this result</button>'
+    )
     return "\n".join(parts)
 
 
@@ -191,6 +215,13 @@ def render_page(
 def render_for(message, intro=LOCAL_INTRO, privacy=LOCAL_PRIVACY):
     """Analyze ``message`` and render the full page, with the verdict echoed in
     the browser tab title. Shared by the POST handler and the example link."""
+
+    if not message.strip():
+        return render_page(
+            result='<p class="notice">Please paste a message above first.</p>',
+            intro=intro,
+            privacy=privacy,
+        )
 
     report = analyze(message)
     title = "{} — {}".format(VERDICT_LABEL[report.verdict], DEFAULT_TITLE)
