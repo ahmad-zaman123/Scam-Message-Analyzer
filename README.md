@@ -58,6 +58,20 @@ python -m scam_message_analyzer.web
 # then open http://127.0.0.1:8765 in a browser
 ```
 
+The page is designed for a worried, non-technical person:
+
+- **One paste box, one big button**, with a clear 🔴 / 🟡 / 🟢 verdict and a
+  plain-language reason for each warning sign.
+- **Try an example** — fills in a sample scam and shows the result, so a
+  first-time visitor sees what to do.
+- **Clear** resets the box and results; **Print or save** keeps a copy to show
+  someone you trust.
+- **"How does this work?"** explains, in plain words, that it uses fixed rules
+  (not AI) and sends nothing.
+- Large text, keyboard focus rings, **dark mode** (follows your system), and a
+  responsive mobile layout — all with **no external fonts, CSS, or JavaScript
+  libraries**, so it works fully offline.
+
 Still fully offline — it binds to localhost only and nothing is uploaded,
 logged, or stored.
 
