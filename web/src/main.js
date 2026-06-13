@@ -124,7 +124,38 @@ function setupTheme() {
   });
 }
 
+async function handleImage(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById("ocrStatus");
+  const checkBtn = document.getElementById("checkBtn");
+  status.hidden = false;
+  status.textContent = "Reading the image… (the first time may take a moment)";
+  checkBtn.disabled = true;
+  try {
+    const { imageToText } = await import("./ocr.js"); // lazy-load OCR + libs
+    const text = await imageToText(file, (p) => {
+      status.textContent = `Reading the image… ${Math.round(p * 100)}%`;
+    });
+    if (text.trim()) {
+      messageEl.value = text;
+      status.hidden = true;
+      check(text);
+    } else {
+      status.textContent =
+        "Couldn't find any text in that image. Try a clearer screenshot, or paste the text.";
+    }
+  } catch (e) {
+    status.textContent =
+      "Sorry, reading images isn't available right now (it needs a one-time download). Please paste the text instead.";
+  } finally {
+    checkBtn.disabled = false;
+    event.target.value = ""; // allow re-selecting the same file
+  }
+}
+
 document.getElementById("checkBtn").addEventListener("click", () => check());
 document.getElementById("exampleBtn").addEventListener("click", loadExample);
 document.getElementById("clearBtn").addEventListener("click", clearAll);
+document.getElementById("image").addEventListener("change", handleImage);
 setupTheme();

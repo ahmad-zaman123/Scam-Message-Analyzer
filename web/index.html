@@ -31,6 +31,11 @@
     <p class="lead">Paste the message below and press the button.</p>
     <textarea id="message" aria-label="Suspicious message to check"
               placeholder="Paste the suspicious email or text here..." autofocus></textarea>
+    <div class="upload">
+      <label for="image">…or upload a screenshot of the message:</label>
+      <input type="file" id="image" accept="image/*">
+      <p id="ocrStatus" class="ocr-status" hidden></p>
+    </div>
     <div class="actions">
       <button id="checkBtn" class="btn btn-primary" type="button">Check this message</button>
       <button id="exampleBtn" class="btn btn-secondary" type="button">Try an example</button>
@@ -41,7 +46,9 @@
       <p>This page checks your message against a fixed list of known scam warning
       signs, right here in your browser. It does not use artificial intelligence,
       has no server, and never sends your message anywhere — the same message
-      always gets the same answer.</p>
+      always gets the same answer. Reading a screenshot uses a text-recognition
+      component that downloads once and then runs on your device; the image
+      itself is never uploaded.</p>
     </details>
   </main>
   <section class="result" id="result" aria-live="polite"></section>
