@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from scam_message_analyzer.analyzer import analyze
 from scam_message_analyzer.explanations import GENERAL_ADVICE, GREEN_CAVEAT
-from scam_message_analyzer.scoring import GREEN, VERDICT_LABEL
+from scam_message_analyzer.scoring import GREEN, RED, VERDICT_LABEL, YELLOW
 
 _BANNER_COLORS = {
     "red": "#c0392b",
@@ -34,6 +34,14 @@ LOCAL_PRIVACY = (
 )
 
 DEFAULT_TITLE = "Is this a scam?"
+
+# Clean, emoji-free names the browser suggests for the saved PDF (it derives the
+# filename from the page title, so we swap to one of these only while printing).
+PDF_TITLES = {
+    RED: "Scam check - likely a scam",
+    YELLOW: "Scam check - be careful",
+    GREEN: "Scam check - probably okay",
+}
 
 # A multi-signal sample shown by the "Try an example" button so first-time
 # visitors can see what a check looks like without pasting anything.
@@ -162,21 +170,35 @@ _HEAD_SCRIPT = """<script>
 
 _TOGGLE_SCRIPT = """<script>
 (function () {
-  var b = document.getElementById('themeToggle');
-  if (!b) return;
-  function sync() {
-    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    b.textContent = dark ? '☀️' : '\U0001F319';
-    b.setAttribute('aria-pressed', dark);
-  }
-  sync();
-  b.addEventListener('click', function () {
-    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var next = dark ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    try { localStorage.setItem('theme', next); } catch (e) {}
+  var toggle = document.getElementById('themeToggle');
+  if (toggle) {
+    var sync = function () {
+      var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      toggle.textContent = dark ? '☀️' : '\U0001F319';
+      toggle.setAttribute('aria-pressed', dark);
+    };
     sync();
-  });
+    toggle.addEventListener('click', function () {
+      var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = dark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      sync();
+    });
+  }
+  // Give the saved PDF a clean filename, then restore the tab title afterwards.
+  var pdf = document.querySelector('.printbtn');
+  if (pdf) {
+    pdf.addEventListener('click', function () {
+      var prev = document.title;
+      document.title = pdf.getAttribute('data-pdf') || prev;
+      window.addEventListener('afterprint', function restore() {
+        document.title = prev;
+        window.removeEventListener('afterprint', restore);
+      });
+      window.print();
+    });
+  }
 })();
 </script>"""
 
@@ -246,7 +268,9 @@ def render_result(report):
     parts.append('<p class="advice">{}</p>'.format(html.escape(advice)))
     parts.append(
         '<button type="button" class="btn btn-secondary printbtn" '
-        'onclick="window.print()">Save as PDF</button>'
+        'data-pdf="{}">Save as PDF</button>'.format(
+            html.escape(PDF_TITLES.get(report.verdict, "Scam check"), quote=True)
+        )
     )
     return "\n".join(parts)
 
