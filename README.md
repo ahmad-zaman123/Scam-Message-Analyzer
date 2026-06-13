@@ -13,7 +13,7 @@ relative). The goal is to teach instinct, not just block.
 - **Predictable.** The same email always gets the same answer — and you can
   read exactly why in `scam_message_analyzer/checks.py`.
 
-**▶ Try it live:** <https://scam-message-analyzer-mu.vercel.app/> — it runs
+**▶ Try it live:** <https://scam-message-analyzer-teal.vercel.app/> — it runs
 entirely in your browser, so nothing you paste (or any screenshot you upload) is
 sent to a server.
 
@@ -85,7 +85,7 @@ caregiver can bookmark it; the relative just pastes and clicks. It runs
 **entirely in the browser**: the analysis happens on the device, so nothing is
 uploaded.
 
-Use the [hosted version](https://scam-message-analyzer-mu.vercel.app/), or run
+Use the [hosted version](https://scam-message-analyzer-teal.vercel.app/), or run
 it locally with any static server:
 
 ```bash
